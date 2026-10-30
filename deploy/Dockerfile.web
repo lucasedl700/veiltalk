@@ -1,0 +1,67 @@
+# =============================================================================
+# VeilTalk Web（Next.js 16 前端 + API）多阶段构建
+# 产物：output:"standalone"（next.config.ts 已开启；根 package.json 的 build 脚本
+#       会自动把 .next/static 与 public 拷贝进 .next/standalone，无需在本文件重复处理）
+#
+# 基础镜像选择说明（node:22-alpine + bun，而非纯 oven/bun）：
+#   - 根 package.json 的 build 脚本调用 `next build`。Next.js 官方 CLI 以 Node 为
+#     基准运行时，纯 oven/bun 镜像不含 node（bun run 会把 node 垫片到 bun 运行时，
+#     属非官方构建路径，Next 16 + Turbopack 下不建议作为生产首选）。
+#   - 因此：构建期 = node:22-alpine + bun（bun 负责按 bun.lock 极速装依赖，
+#     `bun run build` 产出 standalone）；运行期 = 纯 node:22-alpine（见 runner 注释）。
+# =============================================================================
+
+# ------------------------------- 依赖安装层 ----------------------------------
+FROM node:22-alpine AS deps
+WORKDIR /app
+
+# bun 通过 npm 官方分发包安装（bun npm 包会自动挑选 glibc/musl 平台二进制）
+RUN npm install -g bun@1
+
+# 只拷贝依赖清单，最大化利用 Docker 层缓存（源码变动不触发重装依赖）
+COPY package.json bun.lock ./
+RUN bun install --frozen-lockfile
+
+# ------------------------------- 构建层 --------------------------------------
+FROM node:22-alpine AS builder
+WORKDIR /app
+RUN npm install -g bun@1
+
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV NODE_ENV=production
+
+COPY --from=deps /app/node_modules ./node_modules
+COPY package.json bun.lock next.config.ts tsconfig.json postcss.config.mjs tailwind.config.ts components.json ./
+COPY prisma ./prisma
+COPY public ./public
+COPY src ./src
+
+# bun run build = `next build && cp -r .next/static .next/standalone/.next/ && cp -r public .next/standalone/`
+# 即：产出自包含的 .next/standalone（已含 static 与 public），直接供运行层使用
+RUN bun run build
+
+# ------------------------------- 运行层 --------------------------------------
+FROM node:22-alpine AS runner
+WORKDIR /app
+
+# 选择用 node 直接运行 standalone server 的理由：
+#   - 本地 `bun run start` 的本质就是执行 .next/standalone/server.js（bun 仅是运行时之一）；
+#     standalone 产物自包含全部依赖，运行期只需一个 JS 运行时，不必再带 bun。
+#   - node:22-alpine 为 Next.js 官方支持路径，镜像更小、日志直接进 stdout
+#     （本地脚本中的 `| tee server.log` 在容器内无必要，`docker logs` 即可）。
+#   - 如需与本地脚本逐字一致，可改为：COPY bun 与 package.json 后
+#     CMD ["bun", "run", "start"]（会额外多约 90MB）。
+ENV NODE_ENV=production
+ENV PORT=3000
+ENV HOSTNAME=0.0.0.0
+ENV NEXT_TELEMETRY_DISABLED=1
+
+# standalone 目录已含 server.js / .next(含 static) / public / node_modules / package.json
+COPY --from=builder --chown=node:node /app/.next/standalone ./
+
+USER node
+
+EXPOSE 3000
+
+# 进程收到 SIGTERM 由 Node 默认退出；优雅停机由 docker stop 的超时保证
+CMD ["node", "server.js"]

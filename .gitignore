@@ -1,0 +1,63 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+node_modules
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# env files（含 mini-services/signaling-service/.env 的 ADMIN_PASSWORD）
+.env*
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+local-*
+.claude
+.z-ai-config
+.zcode
+*.log
+dev.log
+dev.out.log
+prompt
+server.log
+
+# 运行时数据（隐私）：SQLite 库、元数据台账 JSONL、服务端运行时配置
+/db/
+
+# 开发过程产物：QA 脚本/截图、容器测试归档、AI 工作日志、模板脚手架
+/download/
+/tests/
+/tool-results/
+worklog.md
+/examples/
+
+# Skills directory
+/skills/

@@ -1,0 +1,114 @@
+# =============================================================================
+# VeilTalk 生产部署编排：web(Next.js) + signaling(信令/台账) + coturn(TURN/STUN)
+#
+# 使用（见 deploy/DEPLOYMENT.md）：
+#   cd deploy && bash deploy.sh            # 生成 .env、注入 TURN 凭据、构建并启动
+#   bash deploy.sh logs  [service]         # 跟踪日志
+#   bash deploy.sh down                    # 停止（db/ledger 台账不受影响）
+#
+# 路径说明：compose 的相对路径基于“本文件所在目录”（deploy/）解析：
+#   ../db/ledger           = 项目根 db/ledger（JSONL 元数据台账，持久化）
+#   ./coturn/turnserver.conf = deploy/coturn/turnserver.conf（TURN 配置）
+#
+# 重要约束：浏览器侧信令固定走同源 `io('/?XTransformPort=3003')`，
+# 因此生产环境必须在 3000 前面架一层支持 XTransformPort 查询参数路由的反向代理
+# （Caddy 示例见 DEPLOYMENT.md；nginx 等价配置见 nginx-notes.md）。
+# 3000/3003/3004 建议仅监听内网/localhost，不对公网开放。
+# =============================================================================
+
+name: veiltalk
+
+services:
+  # --------------------------- Web：Next.js 16 -------------------------------
+  web:
+    build:
+      context: ..                      # 项目根（需包含 src、package.json 等）
+      dockerfile: deploy/Dockerfile.web
+    image: veiltalk/web:latest
+    container_name: veiltalk-web
+    restart: unless-stopped
+    ports:
+      - "3000:3000"                    # 生产可改为 "127.0.0.1:3000:3000" 仅本机暴露，由 Caddy 反代
+    env_file:
+      - ../.env                        # deploy.sh 生成：STUN/TURN 地址与凭据等
+    environment:
+      # 容器内网固定指向信令服务（优先级高于 env_file 中的同名变量）
+      SIGNALING_HTTP: http://signaling:3004
+    depends_on:
+      signaling:
+        condition: service_healthy
+    healthcheck:
+      # /api/ice-config 为动态路由，返回 ICE 配置；runner 内有 node22 自带 fetch
+      test: ["CMD-SHELL", "node -e \"fetch('http://127.0.0.1:3000/api/ice-config').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))\""]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+  # ------------------- Signaling：socket.io 信令 + 台账 ----------------------
+  signaling:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.signaling
+    image: veiltalk/signaling:latest
+    container_name: veiltalk-signaling
+    restart: unless-stopped
+    ports:
+      - "3003:3003"                    # 信令 WS（生产建议改 127.0.0.1 绑定，经 Caddy XTransformPort 反代）
+      - "3004:3004"                    # 运维 HTTP API：/svc/health /svc/rooms /svc/ledger（仅内网）
+    environment:
+      SIGNALING_PORT: 3003
+      SIGNALING_HTTP_PORT: 3004
+      LEDGER_DIR: /data/ledger
+      MAX_PEERS_PER_ROOM: 8
+    volumes:
+      # 元数据台账（JSONL，按日轮转）持久化到宿主机 db/ledger，升级/重建容器不丢数据
+      - ../db/ledger:/data/ledger
+    stop_grace_period: 30s             # 给 SIGTERM 处理留时间（台账落盘 + ws 关闭）
+    healthcheck:
+      # 用 bun 内置 fetch 探测 3004 运维 API（容器内无 curl，bun 即健康检查工具）
+      test: ["CMD-SHELL", "bun -e \"fetch('http://127.0.0.1:3004/svc/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))\""]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  # --------------------------- coturn：TURN/STUN -----------------------------
+  # 说明：coturn 镜像入口为 docker-entrypoint.sh，首参以 '-' 开头时自动前置 turnserver。
+  # 这里显式 -c 指定挂载进来的配置，行为与镜像默认 CMD 一致，防镜像默认值变动。
+  # 注意：不要再给本服务传 TURN_* 环境变量，避免与挂载的配置文件重复定义冲突。
+  coturn:
+    image: coturn/coturn:latest
+    container_name: veiltalk-coturn
+    restart: unless-stopped
+    command: ["-c", "/etc/coturn/turnserver.conf"]
+    volumes:
+      - ./coturn/turnserver.conf:/etc/coturn/turnserver.conf:ro
+    ports:
+      - "3478:3478"                    # TURN/STUN 监听（TCP）
+      - "3478:3478/udp"                # TURN/STUN 监听（UDP，打洞主力，必须放行安全组）
+      - "5349:5349"                    # TLS/DTLS 监听（TCP）—— 配置证书前仅占位
+      - "5349:5349/udp"                # TLS/DTLS 监听（UDP）
+      - "49152-49255:49152-49255"      # relay 中继端口段（TCP）
+      - "49152-49255:49152-49255/udp"  # relay 中继端口段（UDP，媒体数据出口，必须放行）
+    healthcheck:
+      # 自探 STUN 绑定（镜像自带 turnutils_stunclient）；若镜像裁剪了该工具，
+      # 可换成：nc -z 127.0.0.1 3478
+      test: ["CMD-SHELL", "turnutils_stunclient 127.0.0.1 >/dev/null 2>&1 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+# ------------------------------- 进阶：host 网络 ------------------------------
+# 若追求 UDP 中继最佳性能，可将 coturn 服务改为 host 网络（并删除其 ports 段）：
+#
+#   coturn:
+#     network_mode: host
+#
+# host 网络的优势：
+#   1. UDP 报文不经过 docker NAT/userland-proxy，媒体转发延迟与吞吐更优；
+#   2. 208 个端口映射（49152-49255 双协议）不再产生大量 docker-proxy 进程；
+#   3. coturn 可直接探测到宿主机网卡 IP，external-ip 推导更可靠。
+# 代价：coturn 直接占用宿主机端口（需确保 3478/5349/49152-49255 未被占用），
+#       与 ports 端口映射二选一，不可同时使用。

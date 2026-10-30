@@ -1,0 +1,1214 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+:root {
+  --radius: 0.625rem;
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+}
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.922 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.556 0 0);
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.556 0 0);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* ------------------------- VeilTalk 自定义样式 ------------------------- */
+
+/* 原生滚动条：滑块取前景色混合，亮暗模式自动协调 */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: color-mix(in oklch, var(--foreground) 20%, transparent);
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in oklch, var(--foreground) 36%, transparent);
+}
+
+/* Radix ScrollArea 自定义滚动条同步配色 */
+[data-slot='scroll-area-thumb'] {
+  background: color-mix(in oklch, var(--foreground) 18%, transparent);
+  transition: background 150ms ease;
+}
+[data-slot='scroll-area-scrollbar']:hover [data-slot='scroll-area-thumb'] {
+  background: color-mix(in oklch, var(--foreground) 34%, transparent);
+}
+
+/* Firefox 原生滚动条 */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in oklch, var(--foreground) 20%, transparent) transparent;
+}
+
+/* 暗色模式原生控件（输入框/滚动条）跟随 */
+.dark {
+  color-scheme: dark;
+}
+
+/* 视频元素黑底防闪烁 */
+video {
+  background: #09090b;
+}
+
+/* 进度条过渡 */
+[data-slot="progress-indicator"],
+.progress-indicator {
+  transition: width 220ms ease-out;
+}
+
+/* 键盘可达性：聚焦环更柔和 */
+:focus-visible {
+  outline-offset: 2px;
+}
+
+/* ------------------------- VeilTalk 动效 ------------------------- */
+
+/* Hero 渐变标题：光晕流动 */
+.veil-halo-text {
+  background-size: 220% auto;
+  animation: veil-halo-flow 7s ease-in-out infinite;
+  filter: drop-shadow(0 0 22px rgb(16 185 129 / 0.25));
+}
+.dark .veil-halo-text {
+  filter: drop-shadow(0 0 26px rgb(45 212 191 / 0.35));
+}
+@keyframes veil-halo-flow {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+/* 按钮光泽扫过（shine） */
+.veil-shine {
+  position: relative;
+  overflow: hidden;
+}
+.veil-shine::after {
+  content: '';
+  position: absolute;
+  top: -20%;
+  bottom: -20%;
+  left: 0;
+  width: 46%;
+  background: linear-gradient(
+    100deg,
+    transparent,
+    rgb(255 255 255 / 0.28) 45%,
+    rgb(255 255 255 / 0.55) 50%,
+    rgb(255 255 255 / 0.28) 55%,
+    transparent
+  );
+  transform: translateX(-180%) skewX(-18deg);
+  animation: veil-shine-sweep 3s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes veil-shine-sweep {
+  0% {
+    transform: translateX(-180%) skewX(-18deg);
+  }
+  55%,
+  100% {
+    transform: translateX(340%) skewX(-18deg);
+  }
+}
+
+/* 视频块连接状态呼吸光圈：connecting 琥珀脉冲 / connected 翡翠微光 */
+.veil-tile-connecting {
+  animation: veil-ring-amber 1.8s ease-out infinite;
+}
+/* 说话者高亮光环：随语音点亮，节奏快于状态光圈 */
+.veil-tile-speaking {
+  animation: veil-ring-speaking 1.1s ease-in-out infinite;
+}
+@keyframes veil-ring-speaking {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 2px rgb(52 211 153 / 0.55),
+      0 0 26px rgb(52 211 153 / 0.28);
+  }
+  50% {
+    box-shadow:
+      0 0 0 3px rgb(52 211 153 / 0.8),
+      0 0 42px rgb(52 211 153 / 0.4);
+  }
+}
+.veil-tile-connected {
+  animation: veil-ring-emerald 3.2s ease-in-out infinite;
+}
+.dark .veil-tile-connected {
+  animation: veil-ring-emerald-dark 3.2s ease-in-out infinite;
+}
+@keyframes veil-ring-amber {
+  0% {
+    box-shadow:
+      0 0 0 0 rgb(245 158 11 / 0.45),
+      0 0 22px rgb(245 158 11 / 0.15);
+  }
+  70% {
+    box-shadow:
+      0 0 0 10px rgb(245 158 11 / 0),
+      0 0 22px rgb(245 158 11 / 0.15);
+  }
+  100% {
+    box-shadow:
+      0 0 0 0 rgb(245 158 11 / 0),
+      0 0 22px rgb(245 158 11 / 0.15);
+  }
+}
+@keyframes veil-ring-emerald {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 1px rgb(16 185 129 / 0.3),
+      0 0 20px rgb(16 185 129 / 0.12);
+  }
+  50% {
+    box-shadow:
+      0 0 0 2px rgb(16 185 129 / 0.45),
+      0 0 30px rgb(16 185 129 / 0.22);
+  }
+}
+@keyframes veil-ring-emerald-dark {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 1px rgb(52 211 153 / 0.35),
+      0 0 26px rgb(16 185 129 / 0.2);
+  }
+  50% {
+    box-shadow:
+      0 0 0 2px rgb(52 211 153 / 0.55),
+      0 0 36px rgb(16 185 129 / 0.32);
+  }
+}
+
+/* 背景光斑缓慢漂浮 */
+.veil-blob-a {
+  animation: veil-float-a 16s ease-in-out infinite;
+}
+.veil-blob-b {
+  animation: veil-float-b 20s ease-in-out infinite;
+}
+@keyframes veil-float-a {
+  0%,
+  100% {
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+  50% {
+    transform: translateX(-50%) translateY(30px) scale(1.07);
+  }
+}
+@keyframes veil-float-b {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(-20px, -26px) scale(1.1);
+  }
+}
+
+/* 空状态装饰：虚线环慢旋 / 卫星浮动 / 柔和扩散 */
+.veil-spin-slow {
+  animation: veil-spin-slow 26s linear infinite;
+}
+@keyframes veil-spin-slow {
+  from {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+.veil-float {
+  animation: veil-float-y 5s ease-in-out infinite;
+}
+@keyframes veil-float-y {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+.veil-ping-soft {
+  animation: veil-ping-soft 2.6s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+@keyframes veil-ping-soft {
+  0% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  80%,
+  100% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+}
+
+/* 无障碍：尊重减弱动效偏好 */
+@media (prefers-reduced-motion: reduce) {
+  .veil-halo-text,
+  .veil-shine::after,
+  .veil-tile-connecting,
+  .veil-tile-connected,
+  .veil-tile-speaking,
+  .veil-blob-a,
+  .veil-blob-b,
+  .veil-spin-slow,
+  .veil-float,
+  .veil-ping-soft {
+    animation: none;
+  }
+}
+
+/* ===== 第 8 轮新增：成员弹窗 / 二维码 / toast 动效 ===== */
+
+/* 成员行错峰入场（弹窗内逐行浮现） */
+.veil-member-row {
+  animation: veil-member-in 0.32s cubic-bezier(0.21, 0.9, 0.35, 1) both;
+}
+@keyframes veil-member-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* QR 容器：扫描线缓动 + 内光晕呼吸 */
+.veil-qr-frame {
+  position: relative;
+  box-shadow: inset 0 0 0 1px rgb(16 185 129 / 0.12), inset 0 0 24px rgb(16 185 129 / 0.08);
+}
+.veil-qr-frame::after {
+  content: '';
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  top: 0;
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, rgb(16 185 129 / 0.45), transparent);
+  animation: veil-qr-scan 3.4s ease-in-out infinite;
+}
+@keyframes veil-qr-scan {
+  0%,
+  100% {
+    top: 6%;
+    opacity: 0.25;
+  }
+  50% {
+    top: 92%;
+    opacity: 0.85;
+  }
+}
+
+/* toast 徽标点缀：通知区域进入时的柔和上滑 */
+[data-sonner-toast],
+[data-radix-collection-item][data-toast] {
+  will-change: transform, opacity;
+}
+
+/* 质量点微光：成员列表头像角标小圆点 */
+.veil-qdot {
+  box-shadow: 0 0 0 2px hsl(var(--background)), 0 0 8px currentColor;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .veil-member-row,
+  .veil-qr-frame::after {
+    animation: none;
+  }
+}
+
+/* ══════════ Round 9 新增：typing 指示 / 传输暂停 / 质量微光 / PWA 安装 ══════════ */
+
+/* 聊天输入中指示：三点波浪跳动（emerald 渐隐渐现 + 上浮） */
+.veil-typing-dot {
+  animation: veil-typing-bounce 1.1s ease-in-out infinite;
+  opacity: 0.35;
+}
+@keyframes veil-typing-bounce {
+  0%,
+  60%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.35;
+  }
+  30% {
+    transform: translateY(-3px);
+    opacity: 1;
+  }
+}
+
+/* 传输暂停：进度条琥珀条纹缓动 + 半透明 */
+.veil-progress-paused {
+  opacity: 0.75;
+  background-image: repeating-linear-gradient(
+    -45deg,
+    transparent 0 6px,
+    rgb(245 158 11 / 0.25) 6px 12px
+  );
+  background-size: 200% 100%;
+  animation: veil-paused-stripes 1.6s linear infinite;
+}
+@keyframes veil-paused-stripes {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: 24px 0;
+  }
+}
+
+/* 暂停徽标柔和呼吸（提示状态未终结） */
+.veil-badge-paused {
+  animation: veil-paused-breathe 2s ease-in-out infinite;
+}
+@keyframes veil-paused-breathe {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgb(245 158 11 / 0);
+  }
+  50% {
+    box-shadow: 0 0 10px 1px rgb(245 158 11 / 0.25);
+  }
+}
+
+/* PWA 安装按钮弹入（footer 出现时轻微弹跳强调） */
+.veil-install-pop {
+  animation: veil-install-in 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+@keyframes veil-install-in {
+  from {
+    transform: translateY(8px) scale(0.92);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .veil-typing-dot,
+  .veil-progress-paused,
+  .veil-badge-paused,
+  .veil-install-pop {
+    animation: none;
+  }
+}
+
+/* ══════════ Round 10 新增：主题切换 / 消息撤回 / 系统消息 / 最近房间 chips ══════════ */
+
+/* 主题切换按钮：图标切换时的旋转弹跳 */
+.veil-theme-flip svg {
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.veil-theme-flip:active svg {
+  transform: rotate(180deg) scale(0.8);
+}
+
+/* 聊天消息入场（轻微上浮，替代无动画的堆叠感） */
+.veil-chat-row {
+  animation: veil-chat-in 0.22s ease-out both;
+}
+@keyframes veil-chat-in {
+  from {
+    transform: translateY(4px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* 已撤回消息：渐隐 + 虚线边暗示「内容已不可读」 */
+.veil-msg-recalled {
+  animation: veil-recall-fade 0.4s ease-out both;
+}
+@keyframes veil-recall-fade {
+  from {
+    filter: blur(2px);
+    opacity: 1;
+    transform: scale(0.98);
+  }
+  to {
+    filter: blur(0);
+    opacity: 0.7;
+    transform: scale(1);
+  }
+}
+
+/* 系统消息 pill：淡入下沉 */
+.veil-sys-msg {
+  animation: veil-sys-in 0.3s ease-out both;
+}
+@keyframes veil-sys-in {
+  from {
+    transform: translateY(-3px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* 大厅最近房间 chips：错峰弹入 */
+.veil-chip-in {
+  animation: veil-chip-pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+@keyframes veil-chip-pop {
+  from {
+    transform: scale(0.85);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .veil-theme-flip svg,
+  .veil-chat-row,
+  .veil-msg-recalled,
+  .veil-sys-msg,
+  .veil-chip-in {
+    animation: none;
+  }
+}
+
+/* ══════════ Round 11 新增：本地录制 / 表情回应 / 静音请求警示条 ══════════ */
+
+/* 消息 hover 操作区（表情回应/撤回）：
+   不能用 Tailwind 的 group-hover:opacity 组合 —— 其 :where(.group) 零特异性会在
+   实际级联中被 opacity-0 压制（实测）。此处用无层级普通 CSS，必然生效。 */
+.veil-hover-actions {
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease;
+}
+.veil-msg-bubble:hover .veil-hover-actions,
+.veil-hover-actions:focus-within {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* 录制状态 pill：入场下滑 + 红点外扩脉冲（控制条上方） */
+.veil-rec-pill {
+  animation: veil-rec-pill-in 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+@keyframes veil-rec-pill-in {
+  from {
+    transform: translateY(-6px) scale(0.92);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+/* 表情回应徽标：弹入（点击后计数 chip 出现） */
+.veil-react-pop {
+  animation: veil-react-pop-in 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+@keyframes veil-react-pop-in {
+  from {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* emoji 快捷条：上浮弹出 */
+.veil-react-bar {
+  animation: veil-react-bar-in 0.18s ease-out both;
+}
+@keyframes veil-react-bar-in {
+  from {
+    transform: translateY(4px) scale(0.94);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+/* 静音请求警示条：左滑入 + 柔和紫光呼吸 */
+.veil-mutebar-in {
+  animation: veil-mutebar-slide 0.35s cubic-bezier(0.22, 1, 0.36, 1) both,
+    veil-mutebar-glow 2.4s ease-in-out 0.35s infinite;
+}
+@keyframes veil-mutebar-slide {
+  from {
+    transform: translateX(-14px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+@keyframes veil-mutebar-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgb(139 92 246 / 0);
+  }
+  50% {
+    box-shadow: 0 0 14px 1px rgb(139 92 246 / 0.22);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .veil-rec-pill,
+  .veil-react-pop,
+  .veil-react-bar,
+  .veil-mutebar-in {
+    animation: none;
+  }
+}
+
+/* ===== 第 12 轮新增：未读徽标 / 拖拽投递 / 密钥轮换动效 ===== */
+
+/* 未读徽标弹入（缩放回弹，出现即醒目） */
+.veil-badge-pop {
+  animation: veil-badge-pop 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+@keyframes veil-badge-pop {
+  from {
+    transform: scale(0.3);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* 全屏拖拽投递 overlay：模糊淡入 */
+.veil-drop-overlay {
+  animation: veil-drop-in 0.18s ease-out both;
+}
+@keyframes veil-drop-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* 投递虚线框：缩放入场 + 边框呼吸（两层动画叠加） */
+.veil-drop-box {
+  animation:
+    veil-drop-box-in 0.22s cubic-bezier(0.21, 0.9, 0.35, 1.15) both,
+    veil-drop-box-breathe 1.6s ease-in-out 0.22s infinite;
+}
+@keyframes veil-drop-box-in {
+  from {
+    transform: scale(0.92);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+@keyframes veil-drop-box-breathe {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgb(16 185 129 / 0.28);
+  }
+  50% {
+    box-shadow: 0 0 28px 4px rgb(16 185 129 / 0.28);
+  }
+}
+
+/* 「立即轮换密钥」按钮：图标周期性轻旋提示可轮换（hover 时加速） */
+.veil-rotate-pulse svg {
+  animation: veil-rotate-hint 4s ease-in-out infinite;
+}
+.veil-rotate-pulse:hover svg {
+  animation-duration: 1.2s;
+}
+@keyframes veil-rotate-hint {
+  0%,
+  86%,
+  100% {
+    transform: rotate(0deg);
+  }
+  93% {
+    transform: rotate(-24deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .veil-badge-pop,
+  .veil-drop-overlay,
+  .veil-drop-box,
+  .veil-rotate-pulse svg {
+    animation: none;
+  }
+}
+
+/* ===== 第 13 轮新增：舞台布局切换 / 房间治理 / 锁定徽标 ===== */
+
+/* 聚焦布局主画面切换：淡入 + 轻微缩放（key 变化时触发） */
+.veil-stage-swap {
+  animation: veil-stage-swap 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes veil-stage-swap {
+  from {
+    transform: scale(0.97);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* 缩略条入场：自下而上浮入 */
+.veil-thumb-in {
+  animation: veil-thumb-in 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes veil-thumb-in {
+  from {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* 聚焦（钉选）主画面呼吸光环：翡翠绿柔光扩散 */
+.veil-spot-ring {
+  animation: veil-spot-ring 2.2s ease-in-out infinite;
+}
+@keyframes veil-spot-ring {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgb(16 185 129 / 0.35);
+  }
+  50% {
+    box-shadow: 0 0 16px 2px rgb(16 185 129 / 0.35);
+  }
+}
+
+/* 锁定徽标 / 房主标记出现：弹性缩放 */
+.veil-lock-pop {
+  animation: veil-lock-pop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+@keyframes veil-lock-pop {
+  from {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* 移出确认态：红色警示轻震（进入待确认时抖动一次吸引注意） */
+.veil-kick-arm {
+  animation: veil-kick-shake 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+@keyframes veil-kick-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-2px);
+  }
+  50% {
+    transform: translateX(2px);
+  }
+  75% {
+    transform: translateX(-1px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .veil-stage-swap,
+  .veil-thumb-in,
+  .veil-spot-ring,
+  .veil-lock-pop,
+  .veil-kick-arm {
+    animation: none;
+  }
+}
+
+/* PAKE 验证徽标出现：弹性缩放（口令互证通过时的一次性强调） */
+.veil-pake-pop {
+  animation: veil-pake-pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+@keyframes veil-pake-pop {
+  from {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* PAKE 徽标锁形图标：验证瞬间落锁（轻微下压 + 回弹） */
+.veil-pake-check {
+  animation: veil-pake-lock 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s both;
+}
+@keyframes veil-pake-lock {
+  0% {
+    transform: translateY(-2px) rotate(-12deg);
+    opacity: 0;
+  }
+  60% {
+    transform: translateY(0) rotate(4deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+}
+
+/* 口令验证失败卡片：红色警示边缘呼吸（提示需要人工关注） */
+.veil-pake-fail {
+  animation: veil-pake-fail-breathe 1.6s ease-in-out infinite;
+}
+@keyframes veil-pake-fail-breathe {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgb(239 68 68 / 0.12);
+  }
+  50% {
+    box-shadow: 0 0 12px 1px rgb(239 68 68 / 0.28);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .veil-pake-pop,
+  .veil-pake-check,
+  .veil-pake-fail {
+    animation: none;
+  }
+}
+
+/* ------------------------------ 第 15 轮：断点续传（P1-6） ------------------------------ */
+
+/* 续传按钮：琥珀色轻脉冲提醒可恢复（一次性 3 遍，避免长期干扰） */
+.veil-resume-btn {
+  animation: veil-resume-nudge 1.8s ease-in-out 3;
+}
+@keyframes veil-resume-nudge {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgb(245 158 11 / 0);
+  }
+  50% {
+    box-shadow: 0 0 0 3px rgb(245 158 11 / 0.18);
+  }
+}
+
+/* 「已续传 X%」徽标：旋回图标入场（RotateCcw 语义呼应） */
+.veil-resume-badge {
+  animation: veil-resume-spin-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+@keyframes veil-resume-spin-in {
+  from {
+    transform: rotate(-180deg) scale(0.7);
+    opacity: 0;
+  }
+  to {
+    transform: rotate(0deg) scale(1);
+    opacity: 1;
+  }
+}
+
+/* 本地暂存页脚：从底部浮入（出现时机 = 首个暂存记录落盘） */
+.veil-cache-foot {
+  animation: veil-cache-rise 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes veil-cache-rise {
+  from {
+    transform: translateY(8px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .veil-resume-btn,
+  .veil-resume-badge,
+  .veil-cache-foot {
+    animation: none;
+  }
+}
+
+/* F-33 对端显式回执：徽标双落章弹入（模拟「盖章确认」语义） */
+.veil-ack-badge {
+  animation: veil-ack-stamp 0.42s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+@keyframes veil-ack-stamp {
+  0% {
+    transform: scale(1.6) rotate(-6deg);
+    opacity: 0;
+  }
+  55% {
+    transform: scale(0.94) rotate(2deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+/* F-33 等待回执：轻微呼吸透明度（诚实状态：尚未收到对端确认） */
+.veil-ack-wait {
+  animation: veil-ack-breathe 2.2s ease-in-out infinite;
+}
+@keyframes veil-ack-breathe {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+
+/* F-37 回执超时降级：琥珀色轻摇入场（8s 无回执 → 诚实提示「可能为旧版本」） */
+.veil-ack-stale {
+  animation: veil-ack-stale-in 0.5s ease-out both;
+}
+@keyframes veil-ack-stale-in {
+  0% {
+    opacity: 0;
+    transform: translateX(-4px);
+  }
+  35% {
+    opacity: 1;
+    transform: translateX(3px);
+  }
+  65% {
+    transform: translateX(-2px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .veil-ack-badge,
+  .veil-ack-wait,
+  .veil-ack-stale {
+    animation: none;
+  }
+}
+
+/* F-34 i18n：语言切换时文案淡入（新语言文本带轻微上浮） */
+.veil-lang-swap {
+  animation: veil-lang-in 0.32s ease-out both;
+}
+@keyframes veil-lang-in {
+  from {
+    opacity: 0;
+    transform: translateY(3px);
+    filter: blur(2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+/* 语言切换按钮：图标轻转（hover 加速） */
+.veil-lang-flip svg {
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.veil-lang-flip:hover svg {
+  transform: rotate(-12deg) scale(1.08);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .veil-lang-swap,
+  .veil-lang-flip svg {
+    animation: none;
+    transition: none;
+  }
+}
+
+/* ===== 第 19 轮新增：Zoom 化套件动效（F-41 反应浮层 / F-42 举手 / 表情按钮） ===== */
+
+/* F-41 反应浮层：底部向上飘起 + 左右轻摆 + 淡出（4s，结束触发 onAnimationEnd 出栈） */
+.veil-reaction-float {
+  animation: veil-reaction-float 4s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+}
+@keyframes veil-reaction-float {
+  0% {
+    opacity: 0;
+    transform: translateY(0) scale(0.6) rotate(-8deg);
+  }
+  8% {
+    opacity: 1;
+    transform: translateY(-6vh) scale(1.06) rotate(6deg);
+  }
+  24% {
+    transform: translateY(-15vh) scale(1) rotate(-6deg);
+  }
+  42% {
+    transform: translateY(-24vh) scale(1.02) rotate(7deg);
+  }
+  60% {
+    transform: translateY(-32vh) scale(0.98) rotate(-5deg);
+  }
+  78% {
+    opacity: 1;
+    transform: translateY(-40vh) scale(0.94) rotate(4deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-46vh) scale(0.9) rotate(0deg);
+  }
+}
+
+/* F-42 举手徽标弹入（左上角 ✋） */
+.veil-hand-pop {
+  animation: veil-hand-pop 0.42s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+@keyframes veil-hand-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.2) rotate(-18deg);
+  }
+  62% {
+    opacity: 1;
+    transform: scale(1.18) rotate(6deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+/* 举手按钮持续轻摆（举起状态） */
+.veil-hand-wave {
+  animation: veil-hand-wave 1.4s ease-in-out infinite;
+}
+@keyframes veil-hand-wave {
+  0%,
+  100% {
+    transform: rotate(-12deg);
+  }
+  50% {
+    transform: rotate(14deg);
+  }
+}
+
+/* F-41 反应气泡（tile 右上角弹出） */
+.veil-bubble-pop {
+  animation: veil-bubble-pop 0.38s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+@keyframes veil-bubble-pop {
+  0% {
+    opacity: 0;
+    transform: translateY(6px) scale(0.4);
+  }
+  64% {
+    opacity: 1;
+    transform: translateY(-2px) scale(1.12);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* 表情面板按钮：hover 浮起 + 按压回弹 */
+.veil-emoji-btn {
+  transition:
+    transform 0.16s cubic-bezier(0.34, 1.56, 0.64, 1),
+    background-color 0.16s ease;
+}
+.veil-emoji-btn:hover {
+  background-color: rgb(245 158 11 / 0.12);
+  transform: scale(1.14);
+}
+.veil-emoji-btn:active {
+  transform: scale(0.9);
+}
+
+/* 全屏下舞台铺满（浏览器 fullscreen 元素默认黑底，浅色主题下避免突兀白边） */
+.veil-stage-root:fullscreen {
+  background: var(--background, #fff);
+  padding: 1rem;
+}
+
+/* 无障碍：尊重减弱动效偏好 —— 反应浮层改为纯淡入淡出（保住 onAnimationEnd 出栈语义） */
+@media (prefers-reduced-motion: reduce) {
+  .veil-reaction-float {
+    animation: veil-reaction-fade 3.2s ease-in-out forwards;
+  }
+  @keyframes veil-reaction-fade {
+    0% {
+      opacity: 0;
+    }
+    15% {
+      opacity: 1;
+    }
+    80% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0;
+    }
+  }
+  .veil-hand-pop,
+  .veil-bubble-pop,
+  .veil-hand-wave {
+    animation: none;
+  }
+}

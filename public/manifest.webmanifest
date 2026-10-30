@@ -1,0 +1,37 @@
+{
+  "name": "VeilTalk 纱语 · 端到端加密网页通话",
+  "short_name": "VeilTalk",
+  "description": "逐帧 AES-256-GCM 端到端加密的浏览器音视频通话与文件直传。全部加解密在浏览器内完成，服务器仅中继密文。",
+  "id": "/",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "launch_handler": { "client_mode": "navigate-existing" },
+  "orientation": "any",
+  "background_color": "#0a0a0a",
+  "theme_color": "#0d9488",
+  "lang": "zh-CN",
+  "dir": "ltr",
+  "categories": ["communication", "social", "productivity"],
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+# =============================================================================
+# VeilTalk Signaling Service（自研 socket.io 信令 + JSONL 元数据台账）
+# 源码：mini-services/signaling-service/index.ts（bun + socket.io，TypeScript 直跑）
+#
+# 双端口架构（不要合并成一个端口）：
+#   3003 = socket.io 信令，path 必须是 '/'（Caddy 网关按 ?XTransformPort=3003 转发，
+#          path='/' 会接管该端口全部 HTTP 请求，因此运维 API 单独拆到 3004）
+#   3004 = 运维 HTTP API：/svc/health、/svc/rooms、/svc/ledger
+#
+# 可配置环境变量（均可被 docker-compose environment 覆盖）：
+#   SIGNALING_PORT       信令 WS 端口（默认 3003）
+#   SIGNALING_HTTP_PORT  运维 API 端口（默认 3004）
+#   LEDGER_DIR           JSONL 台账目录（默认 /data/ledger，挂载宿主机 db/ledger）
+#   MAX_PEERS_PER_ROOM   每房间人数上限（默认 8，mesh 拓扑）
+# =============================================================================
+
+FROM oven/bun:1
+WORKDIR /app
+
+ENV NODE_ENV=production
+ENV SIGNALING_PORT=3003
+ENV SIGNALING_HTTP_PORT=3004
+ENV LEDGER_DIR=/data/ledger
+ENV MAX_PEERS_PER_ROOM=8
+
+# 先拷贝依赖清单再装依赖，利用层缓存（源码更新不重装依赖）
+COPY mini-services/signaling-service/package.json mini-services/signaling-service/bun.lock ./
+RUN bun install --frozen-lockfile --production
+
+COPY mini-services/signaling-service/index.ts ./
+
+# 台账数据卷：由 compose 挂载宿主机 ./db/ledger:/data/ledger（见 deploy/docker-compose.yml）
+# 说明：容器默认以 root 运行，保证对宿主机 bind mount 有写权限；
+#       如需降权，可在 compose 中加 user: "1000:1000" 并对宿主机目录 chown 1000:1000
+VOLUME /data/ledger
+
+EXPOSE 3003 3004
+
+# package.json 的 start = `bun index.ts`；index.ts 内部已处理 SIGTERM/SIGINT（台账落盘后退出）
+CMD ["bun", "run", "start"]

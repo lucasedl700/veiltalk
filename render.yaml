@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: veiltalk
+    runtime: docker
+    dockerfilePath: ./Dockerfile.all
+    plan: free
+    healthCheckPath: /api/status
+    autoDeploy: true
+    envVars:
+      - key: ADMIN_PASSWORD
+        generateValue: true

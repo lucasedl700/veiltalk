@@ -247,14 +247,14 @@ export function Lobby() {
     localStorage.setItem('veil-name', n)
     if (avatar) localStorage.setItem('veil-avatar', avatar)
     setStore({ myName: n, myAvatar: avatar, passphrase, passInLink, pakeEnabled: !!passphrase })
-    // 创建语义：探测得知房间不存在（或显式指定）→ 携带高级设置（密码/审批模式）创建房间
-    // 探测未完成（roomInfo=null）绝不能按「加入」语义静默发送 —— 此处实时探测重试 ~2s，
-    // 仍拿不到结果按创建语义兜底（设置不丢；对已存在房间无害，服务端会正常走校验路径）。
+    // 先确保信令 socket 就绪（公网/隧道下连接可能需要几秒，不等就绪的探测全是空转）
+    await controller.prewarm().catch(() => {})
+    // 探测：已拿到结果直接用；否则快速重试 3 次（远程连接单次探测 8s 超时，3 次足够）
     let info = roomInfo
     if (!info && !createOverride) {
-      for (let i = 0; i < 6 && !info; i++) {
+      for (let i = 0; i < 3 && !info; i++) {
         info = (await controller.queryRoomInfo(id).catch(() => null)) || null
-        if (!info) await new Promise((r) => setTimeout(r, 300))
+        if (!info) await new Promise((r) => setTimeout(r, 500))
       }
     }
     const create = createOverride ?? (info ? !info.exists : true)

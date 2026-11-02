@@ -192,7 +192,29 @@ export function ServerPickerPanel({ onApplied }: { onApplied?: () => void } = {}
                 </div>
               )}
               {r.id === CUSTOM_SERVER_ID && active && (
-                <div className="mt-1.5 space-y-1.5 rounded-lg border border-border/50 bg-muted/20 p-2">
+                <div className="mt-1.5 space-y-2 rounded-lg border border-border/50 bg-muted/20 p-2">
+                  {/* 快捷预设 */}
+                  <div className="flex flex-wrap gap-1">
+                    {[
+                      { label: 'Cloudflare', url: 'stun:stun.cloudflare.com:3478' },
+                      { label: 'Google', url: 'stun:stun.l.google.com:19302' },
+                      { label: 'OpenRelay TCP', url: 'turn:openrelay.metered.ca:443?transport=tcp', user: 'openrelayproject', cred: 'openrelayproject' },
+                      { label: 'OpenRelay UDP', url: 'turn:openrelay.metered.ca:80', user: 'openrelayproject', cred: 'openrelayproject' },
+                    ].map((p) => (
+                      <button
+                        key={p.label}
+                        type="button"
+                        onClick={() => {
+                          setCustomUrl(p.url)
+                          setCustomUser(p.user || '')
+                          setCustomCred(p.cred || '')
+                        }}
+                        className="rounded border border-border/60 bg-background px-1.5 py-0.5 text-[9px] font-medium text-muted-foreground transition-colors hover:border-emerald-500/50 hover:text-emerald-600"
+                      >
+                        {p.label}
+                      </button>
+                    ))}
+                  </div>
                   <Input
                     value={customUrl}
                     onChange={(e) => setCustomUrl(e.target.value)}
@@ -217,9 +239,36 @@ export function ServerPickerPanel({ onApplied }: { onApplied?: () => void } = {}
                       autoComplete="off"
                     />
                   </div>
-                  <Button type="button" size="sm" onClick={saveCustom} className="h-7 w-full text-[10px]">
+                  {/* URL 验证提示 */}
+                  {customUrl && !/^(stun|turn|turns):/.test(customUrl.trim()) && (
+                    <p className="text-[9px] text-red-500">URL 必须以 stun: 或 turn: 开头</p>
+                  )}
+                  {customUrl && /^(stun|turn|turns):/.test(customUrl.trim()) && !customUrl.includes(':') && (
+                    <p className="text-[9px] text-amber-500">缺少端口号（如 :3478）</p>
+                  )}
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={saveCustom}
+                    disabled={!/^(stun|turn|turns):/.test(customUrl.trim())}
+                    className="h-7 w-full text-[10px]"
+                  >
                     {t.lobby.serverCustomSave}
                   </Button>
+                  {/* 保存后可测试 */}
+                  {readCustomServer() && (
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      disabled={testing}
+                      onClick={() => void run()}
+                      className="h-7 w-full text-[10px]"
+                    >
+                      {testing ? <Loader2 size={10} className="animate-spin" /> : <Gauge size={10} />}
+                      {testing ? t.lobby.serverTesting : '测试此服务器'}
+                    </Button>
+                  )}
                 </div>
               )}
             </div>

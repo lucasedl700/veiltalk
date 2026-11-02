@@ -266,11 +266,21 @@ export class RoomClient {
   /** 会话就绪前到达的信令缓冲（key = 对端 socketId） */
   private pendingSignals = new Map<string, SignalData[]>()
 
-  /** 等待信令就绪（socket 已 connect），最多 10s */
+  /** 远程/本地判定：公网访问（隧道/部署）时信令 RTT 高，超时需要放宽 */
+  private static isRemoteConn(): boolean {
+    try {
+      return typeof location !== 'undefined' &&
+        location.hostname !== '127.0.0.1' &&
+        location.hostname !== 'localhost'
+    } catch { return false }
+  }
+
+  /** 等待信令就绪：本地 10s / 远程 25s（公网隧道+VPN 高延迟下 10s 不够） */
   private waitReady(): Promise<boolean> {
     if (this.socket?.connected) return Promise.resolve(true)
+    const timeout = RoomClient.isRemoteConn() ? 25000 : 10000
     return new Promise((resolve) => {
-      const timer = setTimeout(() => resolve(false), 10000)
+      const timer = setTimeout(() => resolve(false), timeout)
       this.socket?.once('connect', () => {
         clearTimeout(timer)
         resolve(true)
@@ -295,6 +305,7 @@ export class RoomClient {
   private async probeIceServers(): Promise<void> {
     try {
       if (typeof RTCPeerConnection === 'undefined') return
+      const probeTimeout = RoomClient.isRemoteConn() ? 8000 : 4500
       const pc = new RTCPeerConnection({ iceServers: this.iceServers })
       let done = false
       const finish = (r: 'relay' | 'srflx' | 'none' | 'timeout') => {
@@ -303,12 +314,29 @@ export class RoomClient {
         clearTimeout(timer)
         try { pc.close() } catch { /* noop */ }
         this.handlers.onIceProbe(r)
+        // UDP 全超时 → VPN/防火墙阻断 UDP：自动切到 TCP TURN（443 端口走 TCP，VPN 通常不拦）
+        if (r === 'timeout' || r === 'none') {
+          const hasTcpTurn = this.iceServers.some((s) => {
+            const urls = Array.isArray(s.urls) ? s.urls : [s.urls]
+            return urls.some((u) => String(u).includes('transport=tcp') || String(u).includes(':443'))
+          })
+          if (hasTcpTurn) {
+            this.handlers.onLog('warn', 'UDP 被阻断（VPN/防火墙），自动切换到 TCP TURN 中继', 'TCP 443 端口通常不被 VPN 拦截；视频通话将走中继，延迟略高但可用')
+            const tcpOnly = this.iceServers.filter((s) => {
+              const urls = Array.isArray(s.urls) ? s.urls : [s.urls]
+              return urls.some((u) => String(u).includes('transport=tcp') || String(u).includes(':443'))
+            })
+            if (tcpOnly.length > 0) this.iceServers = tcpOnly
+          } else {
+            this.handlers.onLog('warn', 'UDP 被阻断（VPN/防火墙），且无 TCP TURN 可用', '请在高级设置中选择「OpenRelay TURN（TCP 443）」，或在部署端配置 TURN_API_URL')
+          }
+        }
       }
-      const timer = setTimeout(() => finish('timeout'), 4500)
+      const timer = setTimeout(() => finish('timeout'), probeTimeout)
       pc.onicecandidate = (e) => {
         const c = e.candidate
-        if (!c) { finish('none'); return } // 收集完成且从未出现非 host 候选
-        if (c.type === 'relay' || c.type === 'srflx') finish(c.type) // 首个非 host 候选立即定论
+        if (!c) { finish('none'); return }
+        if (c.type === 'relay' || c.type === 'srflx') finish(c.type)
       }
       pc.onicegatheringstatechange = () => {
         if (pc.iceGatheringState === 'complete') finish('none')
@@ -366,22 +394,40 @@ export class RoomClient {
     void this.probeIceServers()
 
     const { io } = await import('socket.io-client')
-    // 本机直跑（next dev :3000，无 Caddy 网关）时直连信令端口 —— Next dev 代理不支持
-    // WS 升级且会破坏长轮询；生产部署经网关（/?XTransformPort=3003）不受影响。
+    // 信令连接策略（三层降级）：
+    //  ① SIGNALING_URL（隧道/生产部署）：直连信令服务公网地址 —— Next.js rewrites 不支持
+    //     WebSocket 代理，同源反代只通 HTTP 轮询不通 WS，必须独立地址
+    //  ② 本地开发（localhost:3000）：直连 localhost:3003
+    //  ③ Caddy 网关部署：同源 + XTransformPort=3003 查询参数（走网关路由）
     const localDev =
       typeof location !== 'undefined' &&
       (location.hostname === '127.0.0.1' || location.hostname === 'localhost') &&
       location.port === '3000'
-    const socketUrl = localDev ? `http://${location.hostname}:3003/` : '/?XTransformPort=3003'
-    const socket = io(socketUrl, {
-      transports: ['websocket', 'polling'],
+    let signalingUrl: string | undefined
+    if (!localDev) {
+      try {
+        const res = await fetch('/api/signaling-url', { cache: 'no-store' })
+        if (res.ok) {
+          const data = (await res.json()) as { url?: string | null }
+          if (data.url) signalingUrl = data.url
+        }
+      } catch { /* 拉取失败走同源 */ }
+    }
+    const socket = io(signalingUrl || '/', {
+      path: '/',
+      query: signalingUrl || localDev ? undefined : { XTransformPort: '3003' },
+      transports: ['polling', 'websocket'],
+      upgrade: true,
       forceNew: true,
       reconnection: true,
       reconnectionAttempts: Infinity,
       reconnectionDelay: 1000,
       reconnectionDelayMax: 5000,
-      timeout: 10000,
+      timeout: RoomClient.isRemoteConn() ? 20000 : 10000,
     })
+    if (signalingUrl) {
+      this.handlers.onLog('net', '信令直连模式（独立隧道）', signalingUrl)
+    }
     this.socket = socket
 
     socket.on('connect', () => {
@@ -493,8 +539,9 @@ export class RoomClient {
   /** 房间信息探测（大厅防抖查询）：是否存在/需密码/审批模式/人数 */
   async queryRoomInfo(roomId: string): Promise<RoomInfo | null> {
     if (!this.socket?.connected) return null
+    const timeout = RoomClient.isRemoteConn() ? 8000 : 4000
     return new Promise((resolve) => {
-      const timer = setTimeout(() => resolve(null), 4000)
+      const timer = setTimeout(() => resolve(null), timeout)
       this.socket!.emit('room-info', { roomId }, (r: RoomInfo) => {
         clearTimeout(timer)
         resolve(r && r.ok ? r : null)
@@ -538,7 +585,7 @@ export class RoomClient {
     this.destroyAllSessions(false)
 
     const ack = (await new Promise<JoinRoomAck>((resolve) => {
-      const timer = setTimeout(() => resolve({ ok: false, error: '加入房间超时' }), 8000)
+      const timer = setTimeout(() => resolve({ ok: false, error: '加入房间超时' }), RoomClient.isRemoteConn() ? 20000 : 8000)
       socket.emit(
         'join-room',
         {

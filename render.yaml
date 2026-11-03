@@ -9,3 +9,6 @@ services:
     envVars:
       - key: ADMIN_PASSWORD
         generateValue: true
+      # prisma 兜底（免费层磁盘易失，SQLite 落 /tmp）
+      - key: DATABASE_URL
+        value: file:/tmp/veiltalk.db

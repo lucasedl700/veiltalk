@@ -22,15 +22,19 @@ ENV NODE_ENV=production
 ENV SIGNALING_PORT=3003
 ENV SIGNALING_HTTP_PORT=3004
 ENV PORT=3000
+# 容器内存受限（Koyeb free 512MB）：限制 V8 旧生代，防 cgroup OOM
+ENV NODE_OPTIONS=--max-old-space-size=256
 
-# 启动脚本：先起信令，再起 Next（rewrites 反代 3003/3004）
+# 启动脚本：HOSTNAME=0.0.0.0（Next standalone 默认绑定 $HOSTNAME，容器里它是
+# 容器 ID，显式归零防绑定异常）；bun --smol 压缩信令内存；node 为主进程（exec，
+# 信号直达）。Next 经 beforeFiles rewrites 反代 127.0.0.1:3003/3004。
 COPY <<'EOF' /app/start.sh
 #!/bin/sh
+export HOSTNAME=0.0.0.0
 cd /app/signaling
-bun index.ts &
+bun --smol index.ts &
 cd /app/web
-node server.js &
-wait
+exec node server.js
 EOF
 RUN chmod +x /app/start.sh
 
